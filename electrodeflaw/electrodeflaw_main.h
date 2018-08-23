@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define HtNum  11       //焊条的数目
+#define HTNUM  11       //焊条的数目
 
 #endif
 #pragma once
