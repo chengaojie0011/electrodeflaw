@@ -1,6 +1,8 @@
 #ifndef IMAGE_FUNC_H_
 #define IMAGE_FUNC_H_
 
+#include <iostream>
+#include <vector>
 
 #include<core/core.hpp>  
 #include<highgui/highgui.hpp>  
@@ -8,17 +10,23 @@
 
 using namespace cv;
 
-//定义四个边界点并初始化
-class TarBorderPoint {
-public:
-	Point2i tar_up_;
-	Point2i tar_bottom_;
-	Point2i tar_left_;
-	Point2i tar_right_;
-	void TarInit(Mat tar_image);
 
+//定义焊条类
+class Electrode {
+ public:
+	//Electrode(Point2i center, vector <Point2i> points, int sort): 
+	//		   contour_center_(center), contour_points_(points), sort_number_(sort) {}
+	void GetContourCenter(int x, int y); 
+	void GetContourPoints(vector <Point2i> points);
+	//void Display_contour_center();
+	void DisplayContourCenter();
+	Point2i OutputContourCenter();
+	int sort_number_;
+
+ private:
+	 Point2i contour_center_;
+	 vector <Point2i> contour_points_;
 };
-
 
 
 //区域生长函数
@@ -34,4 +42,10 @@ Mat RegionGrowAndStore(Mat src, int th, vector<Point2i> grow_target_in[]);
 //将区域增长容器显示
 void ShowElectrodeVectorColor(Mat grow_image, const vector<Point2i> grow_target_in[]);
 
-#endif
+//获取图像轮廓，并进行筛选
+void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output);
+
+//对焊条进行排序
+void Sort_Electrode(vector <Electrode> &electrodes_sort);
+
+#endif   //IMAGE_FUNC_H_
