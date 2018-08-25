@@ -16,16 +16,20 @@ class Electrode {
  public:
 	//Electrode(Point2i center, vector <Point2i> points, int sort): 
 	//		   contour_center_(center), contour_points_(points), sort_number_(sort) {}
+	 void GetContourWidthHeight(float width,float height);
 	void GetContourCenter(int x, int y); 
 	void GetContourPoints(vector <Point2i> points);
 	//void Display_contour_center();
 	void DisplayContourCenter();
 	Point2i OutputContourCenter();
-	int sort_number_;
+	vector <Point2i> contour_points_;   //焊条轮廓的点集
+	int sort_number_;            //焊条从左至右的排序序号
 
  private:
-	 Point2i contour_center_;
-	 vector <Point2i> contour_points_;
+	 float e_width;    //焊条的宽
+	 float e_height;	   //焊条的长
+	 Point2i contour_center_;  //焊条的中心点
+
 };
 
 
@@ -46,6 +50,9 @@ void ShowElectrodeVectorColor(Mat grow_image, const vector<Point2i> grow_target_
 void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output);
 
 //对焊条进行排序
-void Sort_Electrode(vector <Electrode> &electrodes_sort);
+void SortElectrode(vector <Electrode> &electrodes_sort);
+
+//显示焊条排序序号
+void ShowSortNumber(Mat src, vector <Electrode> &electrodes_number);
 
 #endif   //IMAGE_FUNC_H_

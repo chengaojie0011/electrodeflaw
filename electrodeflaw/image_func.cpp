@@ -2,19 +2,23 @@
 #include "image_func.h"
 
 //焊条类的方法
-void Electrode::GetContourCenter(int x, int y){
+void Electrode::GetContourWidthHeight(float width, float height) {
+	e_width = width;
+	e_height = height;
+	return;
+}
+void Electrode::GetContourCenter(int x, int y) {
 	contour_center_.x = x;
 	contour_center_.y = y;
 	return;
 }
 
-
-void Electrode::GetContourPoints(vector <Point2i> points){
+void Electrode::GetContourPoints(vector <Point2i> points) {
 	contour_points_ = points;
 	return;
 }
 
-void Electrode::DisplayContourCenter(){
+void Electrode::DisplayContourCenter() {
 	cout << "contour_center_.x:" << contour_center_.x << endl;
 	cout << "contour_center_.y:" << contour_center_.y << endl;
 
@@ -261,8 +265,6 @@ void ShowElectrodeVectorColor(Mat grow_image,const vector<Point2i> grow_target_i
 	//imwrite("find_image.png", show_image);   //将mat写入到文件
 }
 
-
-
 void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output) {
 
 	//int element_value = src.cols / 150;       //设置腐蚀的阈值
@@ -271,14 +273,12 @@ void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output) {
 	//morphologyEx(src, src, MORPH_ERODE, element);
 	vector<vector<Point>> contours;   //轮廓的容器
 	vector<Vec4i> hierarchy;
-	findContours(src, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
+	findContours(src, contours, hierarchy, RETR_TREE,CHAIN_APPROX_NONE, Point(0, 0));
 	Mat find_image = Mat::zeros(src.size(), CV_8UC3);
 	RNG rng(0);
 	//设定焊条面积和周长阈值
 	//int area_min = 6000, area_max = 10000;
 	//int length_min = 1300, length_max = 1700;
-	int area_min = 6000, area_max = 10000;
-	int length_min = 1300, length_max = 1700;
 	RotatedRect result_rect;
 	Electrode electrode_model;
 	//int electrodes_number = 0;  //统计焊条数量
@@ -286,51 +286,42 @@ void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output) {
 
 	//设定焊条长宽的阈值
 	float contours_width, contours_height;
-	for (int i = 0; i < contours.size(); i++)
-	{
-		//对获取轮廓的周长和面积进行筛选
-		cout <<"面积"<< contourArea(contours[i]) << endl;
-		cout << "周长"<<arcLength(contours[i], true) << endl;
-		if (contourArea(contours[i]) >  area_min && contourArea(contours[i]) <  area_max 
-			&& arcLength(contours[i], true) >  length_min && arcLength(contours[i], true) <  length_max) {
-
+	float contours_factor = float(src.rows/740.0);
+	float width_min = 12* contours_factor, width_max = 18*contours_factor;
+	float height_min = 700* contours_factor, height_max = 750* contours_factor;
+	for (int i = 0; i < contours.size(); i++) {
 			result_rect = minAreaRect(contours[i]);//获取轮廓的最小外接矩形 
 			result_rect.points(pt);//获取最小外接矩形的四个顶点坐标
-
-				cout <<contourArea(contours[i]) << endl;
-			cout << arcLength(contours[i], true) << endl;
 			contours_width = result_rect.size.width;
 			contours_height = result_rect.size.height;
-
-			//cout << contours_width << endl;
-			//cout << contours_height << eCandl;
 			//对获取轮廓的长宽进行筛选
-			if (contours_width > 12 && contours_width < 18 && contours_height > 700 && contours_height < 750) {
+			if (contours_width > width_min && contours_width < width_max && 
+				contours_height > height_min && contours_height < height_max) {
+
+				cout << "宽：" << contours_width << endl;
+				cout << "高：" << contours_height << endl;
 				Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
 				drawContours(find_image, contours, i, color, 1, 8, hierarchy, 0, Point(0, 0));
 				electrode_model.GetContourCenter(result_rect.center.x, result_rect.center.y);
 				electrode_model.GetContourPoints(contours[i]);
+				electrode_model.GetContourWidthHeight(contours_width, contours_height);
 				electrode_model.sort_number_ = 0;
 				electrodes_output.push_back(electrode_model);
-				//*electrodes_output = electrode_model;
-				//++electrodes_output;
-				//electrodes_number++;
 				//绘制最小外接矩形
-				line(find_image, pt[0], pt[1], color, 2, 8);
+				/*line(find_image, pt[0], pt[1], color, 2, 8);
 				line(find_image, pt[1], pt[2], color, 2, 8);
 				line(find_image, pt[2], pt[3], color, 2, 8);
-				line(find_image, pt[3], pt[0], color, 2, 8);
+				line(find_image, pt[3], pt[0], color, 2, 8);*/
 			}
-		}
+		
 	}
-	namedWindow("findContours", CV_WINDOW_AUTOSIZE);
-	imshow("findContours", find_image);
+	//namedWindow( "findContours", CV_WINDOW_AUTOSIZE);
+	//imshow( "findContours", find_image);
 	//imwrite("find_image.png", find_image);   //将mat写入到文件
 
 }
 
-
-void Sort_Electrode(vector <Electrode> &electrodes_sort) {
+void SortElectrode(vector <Electrode> &electrodes_sort) {
 	
 	int num = electrodes_sort.size();
 	int *sort= new int[electrodes_sort.size()];
@@ -361,4 +352,23 @@ void Sort_Electrode(vector <Electrode> &electrodes_sort) {
 	}
 	delete sort;
 
+}
+
+void ShowSortNumber(Mat src, vector <Electrode> &electrodes_number) {
+	//设置绘制文本的相关参数
+	int font_face = cv::FONT_HERSHEY_COMPLEX;
+	double font_scale = 0.5;
+	int thickness = 1;
+	int baseline;
+	Point2i center_sort;
+	int sort_num;
+	for (int i = 0; i < electrodes_number.size(); i++) {
+		center_sort = electrodes_number[i].OutputContourCenter();
+		sort_num = electrodes_number[i].sort_number_;
+		string text = to_string(sort_num);
+		//Size text_size = getTextSize(text, font_face, font_scale, thickness, &baseline);
+		putText(src, text, center_sort, font_face, font_scale, cv::Scalar(0, 0, 255), thickness, 8, 0);
+	}
+	//namedWindow("Picture_thes", CV_WINDOW_AUTOSIZE);
+	//imshow("Picture_thes", src);
 }
