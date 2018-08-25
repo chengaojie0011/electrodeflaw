@@ -283,7 +283,6 @@ void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output) {
 	Electrode electrode_model;
 	//int electrodes_number = 0;  //统计焊条数量
 	Point2f pt[4];
-
 	//设定焊条长宽的阈值
 	float contours_width, contours_height;
 	float contours_factor = float(src.rows/740.0);
@@ -292,12 +291,20 @@ void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output) {
 	for (int i = 0; i < contours.size(); i++) {
 			result_rect = minAreaRect(contours[i]);//获取轮廓的最小外接矩形 
 			result_rect.points(pt);//获取最小外接矩形的四个顶点坐标
-			contours_width = result_rect.size.width;
-			contours_height = result_rect.size.height;
+			if (result_rect.size.width < result_rect.size.height) {
+				contours_width = result_rect.size.width;
+				contours_height = result_rect.size.height;
+			}else
+			{
+				contours_height = result_rect.size.width;
+				contours_width = result_rect.size.height;
+			}
+			//cout << "宽：" << contours_width << endl;
+			//cout << "高：" << contours_height << endl;
+
 			//对获取轮廓的长宽进行筛选
 			if (contours_width > width_min && contours_width < width_max && 
 				contours_height > height_min && contours_height < height_max) {
-
 				cout << "宽：" << contours_width << endl;
 				cout << "高：" << contours_height << endl;
 				Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
@@ -316,8 +323,8 @@ void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output) {
 		
 	}
 	//namedWindow( "findContours", CV_WINDOW_AUTOSIZE);
-	//imshow( "findContours", find_image);
-	//imwrite("find_image.png", find_image);   //将mat写入到文件
+	imshow( "findContours", find_image);
+	imwrite("find_image.png", find_image);   //将mat写入到文件
 
 }
 
