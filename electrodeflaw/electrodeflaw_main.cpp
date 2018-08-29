@@ -22,7 +22,7 @@ int main() {
 	mytime_start = clock();
 	
 	//¶ÁÈ¡Í¼Ïñ
-	Mat src_image = imread("C:\\project\\gitrepo\\githubprj\\electrodeflaw\\test3.jpg",CV_LOAD_IMAGE_ANYCOLOR);
+	Mat src_image = imread("C:\\project\\gitrepo\\githubprj\\electrodeflaw\\test.jpg",CV_LOAD_IMAGE_ANYCOLOR);
 	//Mat src_image = imread("C:\\project\\gitrepo\\githubprj\\electrodeflaw\\1.jpg", CV_LOAD_IMAGE_ANYCOLOR);
 
 	if (!src_image.data) {

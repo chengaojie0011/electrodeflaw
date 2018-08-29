@@ -284,13 +284,15 @@ void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output) {
 	//int electrodes_number = 0;  //统计焊条数量
 	Point2f pt[4];
 	//设定焊条长宽的阈值
-	float contours_width, contours_height;
+	float contours_width, contours_height,contours_scale;
 	float contours_factor = float(src.rows/740.0);
 	float width_min = 12* contours_factor, width_max = 18*contours_factor;
 	float height_min = 700* contours_factor, height_max = 750* contours_factor;
+	float scale_min = 45.0, scale_max =60.0;
 	for (int i = 0; i < contours.size(); i++) {
 			result_rect = minAreaRect(contours[i]);//获取轮廓的最小外接矩形 
 			result_rect.points(pt);//获取最小外接矩形的四个顶点坐标
+			//外接矩形的width和height的选取与矩形角度有关，我们这里进行比对，选取长的为height
 			if (result_rect.size.width < result_rect.size.height) {
 				contours_width = result_rect.size.width;
 				contours_height = result_rect.size.height;
@@ -301,12 +303,14 @@ void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output) {
 			}
 			//cout << "宽：" << contours_width << endl;
 			//cout << "高：" << contours_height << endl;
-
+			contours_scale = contours_height / contours_width;
 			//对获取轮廓的长宽进行筛选
 			if (contours_width > width_min && contours_width < width_max && 
-				contours_height > height_min && contours_height < height_max) {
+				contours_height > height_min && contours_height < height_max &&
+				contours_scale > scale_min && contours_scale < scale_max) {
 				cout << "宽：" << contours_width << endl;
 				cout << "高：" << contours_height << endl;
+				cout << "比例：" << contours_scale << endl;
 				Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
 				drawContours(find_image, contours, i, color, 1, 8, hierarchy, 0, Point(0, 0));
 				electrode_model.GetContourCenter(result_rect.center.x, result_rect.center.y);
@@ -323,8 +327,8 @@ void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output) {
 		
 	}
 	//namedWindow( "findContours", CV_WINDOW_AUTOSIZE);
-	imshow( "findContours", find_image);
-	imwrite("find_image.png", find_image);   //将mat写入到文件
+	//imshow( "findContours", find_image);
+	//imwrite("find_image.png", find_image);   //将mat写入到文件
 
 }
 
