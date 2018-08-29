@@ -265,6 +265,18 @@ void ShowElectrodeVectorColor(Mat grow_image,const vector<Point2i> grow_target_i
 	//imwrite("find_image.png", show_image);   //将mat写入到文件
 }
 
+//轮廓匹配图像预处理
+Mat PreprocessingForContours(Mat src) {
+	Mat gray_image, thres_image;
+	Mat blur_image;
+	cvtColor(src, gray_image, CV_BGR2GRAY);     //将图像转换为灰度图
+	medianBlur(gray_image, blur_image, 3);           //中值滤波 
+	threshold(blur_image, thres_image, 150, 255, 0);   // 阈值分割
+	return thres_image;
+
+}
+
+//轮廓匹配检测目标运行函数
 void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output) {
 
 	//int element_value = src.cols / 150;       //设置腐蚀的阈值
@@ -332,6 +344,7 @@ void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output) {
 
 }
 
+//对焊条进行排序
 void SortElectrode(vector <Electrode> &electrodes_sort) {
 	
 	int num = electrodes_sort.size();
@@ -365,7 +378,8 @@ void SortElectrode(vector <Electrode> &electrodes_sort) {
 
 }
 
-void ShowSortNumber(Mat src, vector <Electrode> &electrodes_number) {
+//显示焊条排序序号
+void ShowSortNumber(Mat src, vector <Electrode> electrodes_number) {
 	//设置绘制文本的相关参数
 	int font_face = cv::FONT_HERSHEY_COMPLEX;
 	double font_scale = 0.5;
@@ -382,4 +396,45 @@ void ShowSortNumber(Mat src, vector <Electrode> &electrodes_number) {
 	}
 	//namedWindow("Picture_thes", CV_WINDOW_AUTOSIZE);
 	//imshow("Picture_thes", src);
+}
+
+//以红色线条显示焊条轮廓
+void ShowElectrodeContours(Mat src, vector <Electrode> electrodes_number) {
+
+	Mat find_image = Mat::zeros(src.size(), CV_8UC3);
+	RNG rng(0);
+	for (int i = 0; i < electrodes_number.size(); i++) {
+		Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
+		for (auto it = electrodes_number[i].contour_points_.cbegin();
+			it != electrodes_number[i].contour_points_.cend(); ++it) {
+			/*src.at<Vec3b>((*it).y, (*it).x)[0] = color[0];
+			src.at<Vec3b>((*it).y, (*it).x)[1] = color[1];
+			src.at<Vec3b>((*it).y, (*it).x)[2] = color[2];*/
+			src.at<Vec3b>((*it).y, (*it).x)[0] = 0;
+			src.at<Vec3b>((*it).y, (*it).x)[1] = 0;
+			src.at<Vec3b>((*it).y, (*it).x)[2] = 255;
+		}
+		//cout << electrodes_number[i].contour_points_.size() << endl;
+	}
+
+	namedWindow("Picture_contour", CV_WINDOW_AUTOSIZE);
+	imshow("Picture_contour", src);
+	//imwrite("thres_image.png", src);   //将mat写入到文件
+
+}
+
+//焊条轮廓识别并排序的整体函数
+void FindElectrodeContoursAndSort(Mat src, vector <Electrode> &electrodes_input) {
+
+	FindElectrodeContours(src, electrodes_input);
+	SortElectrode(electrodes_input);
+
+}
+
+//显示轮廓和焊条排序数目
+void ShowContoursAndSort(Mat src, vector <Electrode> electrodes_input) {
+	//显示焊条排序序号
+	ShowSortNumber(src, electrodes_input);
+	//以红色线条显示焊条轮廓
+	ShowElectrodeContours(src, electrodes_input);
 }

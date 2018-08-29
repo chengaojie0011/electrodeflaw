@@ -46,6 +46,12 @@ Mat RegionGrowAndStore(Mat src, int th, vector<Point2i> grow_target_in[]);
 //将区域增长容器显示
 void ShowElectrodeVectorColor(Mat grow_image, const vector<Point2i> grow_target_in[]);
 
+
+
+
+//轮廓匹配图像预处理
+Mat PreprocessingForContours(Mat src);
+
 //获取图像轮廓，并进行筛选
 void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output);
 
@@ -53,6 +59,15 @@ void FindElectrodeContours(Mat src, vector <Electrode> &electrodes_output);
 void SortElectrode(vector <Electrode> &electrodes_sort);
 
 //显示焊条排序序号
-void ShowSortNumber(Mat src, vector <Electrode> &electrodes_number);
+void ShowSortNumber(Mat src, vector <Electrode> electrodes_number);
+
+//以红色线条显示焊条轮廓
+void ShowElectrodeContours(Mat src, vector <Electrode> electrodes_number);
+
+//焊条轮廓识别并排序的整体函数
+void FindElectrodeContoursAndSort(Mat src, vector <Electrode> &electrodes_input);
+
+//显示轮廓和焊条排序数目
+void ShowContoursAndSort(Mat src, vector <Electrode> electrodes_input);
 
 #endif   //IMAGE_FUNC_H_
